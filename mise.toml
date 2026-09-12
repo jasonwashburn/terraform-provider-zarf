@@ -1,0 +1,67 @@
+[tools]
+go = "1.26.5"
+golangci-lint = "2.12.2"
+hk = "1.58.1"
+opentofu = "1.12.5"
+terraform = "1.16.1"
+zizmor = "1.29.0"
+
+[env]
+HK_MISE = "1"
+TF_CLI_CONFIG_FILE = "{{ config_root }}/.tofurc.dev"
+TF_ACC_PROVIDER_NAMESPACE = "jasonwashburn"
+TF_ACC_PROVIDER_HOST = "registry.terraform.io"
+
+[hooks]
+postinstall = "hk install --mise"
+
+[tasks.build]
+description = "Build the provider for local development"
+depends = ["configure"]
+run = "mkdir -p build && go build -trimpath -o build/terraform-provider-zarf ."
+
+[tasks.configure]
+description = "Configure OpenTofu to use the local provider build"
+run = """
+cat > .tofurc.dev <<EOF
+provider_installation {
+  dev_overrides {
+    "jasonwashburn/zarf" = "{{ config_root }}/build"
+  }
+  direct {}
+}
+EOF
+"""
+
+[tasks.build-check]
+description = "Compile all Go packages"
+run = "go build -v ./..."
+
+[tasks.install]
+description = "Install the provider"
+depends = ["build"]
+run = "go install -v ./..."
+
+[tasks.fmt]
+description = "Format Go source files"
+run = "gofmt -s -w -e ."
+
+[tasks.lint]
+description = "Run linters"
+run = "golangci-lint run"
+
+[tasks.generate]
+description = "Generate provider documentation"
+run = "go generate ./..."
+
+[tasks.test]
+description = "Run the provider test suite"
+run = "go test -v -cover -timeout=120s -parallel=10 ./..."
+
+[tasks.testacc]
+description = "Run acceptance tests"
+run = "TF_ACC=1 go test -v -cover -timeout 120m ./..."
+
+[tasks.default]
+description = "Format, lint, install, and generate"
+run = "mise run fmt && mise run lint && mise run install && mise run generate"
