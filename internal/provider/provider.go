@@ -1,7 +1,10 @@
+// Package provider implements the Terraform provider.
 package provider
 
 import (
 	"context"
+
+	"terraform-provider-zarf/internal/client"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -44,11 +47,25 @@ func (p *zarfProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 
 // Configure prepares a client for data sources and resources.
 func (p *zarfProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	client, err := client.NewClient()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create Zarf Client",
+			"An unexpected error was encountered when creating the Zarf client. "+
+				"Please report this issue to the provider developers.\n\n"+
+				"Zarf Client Error: "+err.Error(),
+		)
+		return
+	}
+	resp.DataSourceData = client
+	resp.ResourceData = client
 }
 
 // DataSources defines the data sources implemented in the provider.
 func (p *zarfProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return nil
+	return []func() datasource.DataSource{
+		NewPackageDataSource,
+	}
 }
 
 // Resources defines the resources implemented in the provider.

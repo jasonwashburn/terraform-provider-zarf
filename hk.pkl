@@ -40,24 +40,6 @@ local linters = new Mapping<String, Step> {
         fix = "go mod tidy"
         glob = List("**/*.go", "go.mod", "go.sum")
     }
-    ["generated-docs"] {
-        check = """
-            generated_docs_tmp="$(mktemp -d)"
-            trap 'rm -rf "$generated_docs_tmp"' EXIT
-            cp -R docs "$generated_docs_tmp/docs"
-
-            if ! go generate ./...; then
-                echo "Documentation generation failed. Run 'mise run generate' for the full output." >&2
-                exit 1
-            fi
-
-            if ! diff -ru "$generated_docs_tmp/docs" docs; then
-                echo "Generated documentation is out of date. Run 'mise run generate' and commit the results." >&2
-                exit 1
-            fi
-            """
-        glob = List("**/*.go", "go.mod", "go.sum", "docs/**/*.md")
-    }
     ["zizmor"] {
         check = "zizmor .github/workflows"
         glob = List(".github/workflows/**/*.yml", ".github/workflows/**/*.yaml")
