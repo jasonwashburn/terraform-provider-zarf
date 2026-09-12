@@ -36,6 +36,13 @@ func (c *client) InspectPackage(ctx context.Context, source string) (PackageData
 	if err != nil {
 		return PackageData{}, err
 	}
+	defer func() {
+		if err := layout.Cleanup(); err != nil {
+			// Log the error but don't return it, as we want to return the package data if possible
+			// TODO: Use a proper logging mechanism instead of printing to stdout
+			println("Error cleaning up package layout:", err.Error())
+		}
+	}()
 	metadata := layout.PackageDefinition.AsV1alpha1().Metadata
 	return PackageData{
 		Metadata: ZarfPackageMetadata{
