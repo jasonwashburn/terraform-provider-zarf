@@ -6,10 +6,7 @@ import (
 )
 
 const (
-	// providerConfig is a shared configuration to combine with the actual
-	// test configuration so the HashiCups client is properly configured.
-	// It is also possible to use the HASHICUPS_ environment variables instead,
-	// such as updating the Makefile and running the testing through that tool.
+	// providerConfig is a shared configuration for acceptance testing. It is used to configure the provider.
 	providerConfig = `
 provider "zarf" {}
 `

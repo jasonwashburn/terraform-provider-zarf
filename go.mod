@@ -1,6 +1,6 @@
 module terraform-provider-zarf
 
-go 1.26.6
+go 1.27.1
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
